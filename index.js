@@ -9,7 +9,7 @@ const HF_API_KEY = process.env.HF_API_KEY;
 
 // أفضل النماذج للعربية (اختر واحدًا)
 const ARABIC_MODELS = {
-  MAREFA: "deepseek-ai/DeepSeek-R1", // متخصص في تلخيص العربية
+  MAREFA: "deepseek-ai/DeepSeek-V3", // متخصص في تلخيص العربية
   ARABART: "csebuetnlp/banglabart", // يدعم العربية أيضًا
   ARAT5: "UBC-NLP/AraT5-base-summarization" // خيار آخر
 };
