@@ -5,8 +5,8 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// الاتصال بـ OpenAI
-const openaiApiKey = process.env.OPENAI_API_KEY;  // ننصح باستخدام environment variable لحفظ API key بشكل آمن
+// مفتاح API لـ DeepSeek (يجب تخزينه في متغيرات البيئة)
+const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
 
 app.post('/summarize', async (req, res) => {
   const { text } = req.body;
@@ -17,10 +17,11 @@ app.post('/summarize', async (req, res) => {
 
   try {
     const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
+      'https://api.deepseek.com/v1/chat/completions', // نهاية نقطة DeepSeek API
       {
-        model: 'gpt-3.5-turbo',  // استخدم الموديل الصحيح الآن
+        model: 'deepseek-chat', // موديل DeepSeek
         messages: [
+          { role: 'system', content: 'أنت مساعد مفيد يقوم بتلخيص النصوص.' },
           { role: 'user', content: `اختصر لي هذا النص: ${text}` }
         ],
         max_tokens: 100,
@@ -28,7 +29,7 @@ app.post('/summarize', async (req, res) => {
       },
       {
         headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
+          'Authorization': `Bearer ${deepseekApiKey}`,
           'Content-Type': 'application/json'
         },
       }
@@ -39,13 +40,13 @@ app.post('/summarize', async (req, res) => {
     res.json({ summarized: summarizedText });
 
   } catch (error) {
-    console.error('Error fetching from OpenAI:', error.response?.data || error.message);
-    res.status(500).json({ error: 'حدث خطأ أثناء الاتصال بـ OpenAI' });
+    console.error('Error fetching from DeepSeek:', error.response?.data || error.message);
+    res.status(500).json({ error: 'حدث خطأ أثناء الاتصال بـ DeepSeek API' });
   }
 });
 
 app.get('/', (req, res) => {
-  res.send('Summarization API is running.');
+  res.send('Summarization API is running with DeepSeek.');
 });
 
 app.listen(port, () => {
