@@ -5,50 +5,35 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// مفتاح API لـ DeepSeek (يجب تخزينه في متغيرات البيئة)
-const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
+const HF_API_KEY = process.env.HF_API_KEY; // احفظ التوكن في متغير البيئة
 
 app.post('/summarize', async (req, res) => {
   const { text } = req.body;
 
   if (!text) {
-    return res.status(400).json({ error: 'يرجى إرسال نص للتلخيص' });
+    return res.status(400).json({ error: 'النص المطلوب تلخيصه مفقود' });
   }
 
   try {
     const response = await axios.post(
-      'https://api.deepseek.com/v1/chat/completions', // نهاية نقطة DeepSeek API
-      {
-        model: 'deepseek-chat', // موديل DeepSeek
-        messages: [
-          { role: 'system', content: 'أنت مساعد مفيد يقوم بتلخيص النصوص.' },
-          { role: 'user', content: `اختصر لي هذا النص: ${text}` }
-        ],
-        max_tokens: 100,
-        temperature: 0.7,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${deepseekApiKey}`,
-          'Content-Type': 'application/json'
-        },
-      }
+      'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+      { inputs: text },
+      { headers: { 'Authorization': `Bearer ${HF_API_KEY}` } }
     );
 
-    // استرجاع التلخيص من الاستجابة
-    const summarizedText = response.data.choices[0].message.content.trim();
-    res.json({ summarized: summarizedText });
+    const summary = response.data[0]?.summary_text || "لا يمكن تلخيص النص الآن";
+    res.json({ summary });
 
   } catch (error) {
-    console.error('Error fetching from DeepSeek:', error.response?.data || error.message);
-    res.status(500).json({ error: 'حدث خطأ أثناء الاتصال بـ DeepSeek API' });
+    console.error('Error from Hugging Face:', error.response?.data || error.message);
+    res.status(500).json({ error: 'فشل في الاتصال بخدمة التلخيص' });
   }
 });
 
 app.get('/', (req, res) => {
-  res.send('Summarization API is running with DeepSeek.');
+  res.send('Hugging Face Summarization API is running!');
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
