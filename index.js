@@ -9,7 +9,7 @@ const HF_API_KEY = process.env.HF_API_KEY;
 
 // أفضل النماذج للعربية (اختر واحدًا)
 const ARABIC_MODELS = {
-  MAREFA: "eslamxm/AraT5-base-title-generation-finetune-ar-xlsum", // متخصص في تلخيص العربية
+  MAREFA: "ahmeddbahaa/t5-arabic-base-finetuned-wikilingua-ar", // متخصص في تلخيص العربية
   ARABART: "csebuetnlp/banglabart", // يدعم العربية أيضًا
   ARAT5: "UBC-NLP/AraT5-base-summarization" // خيار آخر
 };
