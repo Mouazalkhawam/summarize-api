@@ -9,7 +9,7 @@ const HF_API_KEY = process.env.HF_API_KEY;
 
 // أفضل النماذج للعربية (اختر واحدًا)
 const ARABIC_MODELS = {
-  MAREFA: "camel-ai/CAMEL-13B-Role-Playing-Data", // متخصص في تلخيص العربية
+  MAREFA: "facebook/bart-large-cnn", // متخصص في تلخيص العربية
   ARABART: "csebuetnlp/banglabart", // يدعم العربية أيضًا
   ARAT5: "UBC-NLP/AraT5-base-summarization" // خيار آخر
 };
