@@ -15,39 +15,53 @@ const ARABIC_MODELS = {
 };
 
 app.post('/summarize', async (req, res) => {
-  const { text } = req.body;
-
-  if (!text) {
-    return res.status(400).json({ error: 'النص المطلوب تلخيصه مفقود' });
-  }
-
-  try {
-    const response = await axios.post(
-      `https://api-inference.huggingface.co/models/${ARABIC_MODELS.MAREFA}`,
-      { 
-        inputs: text,
-        parameters: { max_length: 130 } // تحكم بطول الملخص
-      },
-      { 
-        headers: { 
-          'Authorization': `Bearer ${HF_API_KEY}`,
-          'Content-Type': 'application/json' 
-        } 
+    const { text } = req.body;
+  
+    if (!text) {
+      return res.status(400).json({ error: 'النص المطلوب تلخيصه مفقود' });
+    }
+  
+    try {
+      const response = await axios.post(
+        `https://api-inference.huggingface.co/models/${ARABIC_MODELS.MAREFA}`,
+        { 
+          inputs: text,
+          parameters: { 
+            max_length: 100,  // الحد الأعلى
+            min_length: 50,   // الحد الأدنى لضمان سطرين على الأقل
+            do_sample: true,  // لتحسين الجودة
+            temperature: 0.7  // للتوازن بين الإبداع والدقة
+          }
+        },
+        { 
+          headers: { 
+            'Authorization': `Bearer ${HF_API_KEY}`,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+  
+      // معالجة النتيجة لضمان الطول المطلوب
+      let summary = response.data[0]?.summary_text || response.data.generated_text;
+      
+      if (!summary || summary.split(' ').length < 10) { // إذا كان الملخص قصيرًا جدًا
+        summary = "تعذر إنشاء ملخّص مفيد. يرجى التأكد من أن النص المدخل يحتوي على معلومات كافية.";
       }
-    );
-
-    const summary = response.data[0]?.summary_text || response.data.generated_text || "لا يمكن تلخيص النص الآن";
-    res.json({ summary });
-
-  } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
-    res.status(500).json({ 
-      error: 'فشل في التلخيص',
-      details: error.response?.data?.error || error.message 
-    });
-  }
-});
-
+  
+      res.json({ 
+        original_length: text.length,
+        summary_length: summary.length,
+        summary 
+      });
+  
+    } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
+      res.status(500).json({ 
+        error: 'فشل في التلخيص',
+        details: error.response?.data?.error || error.message 
+      });
+    }
+  });
 app.get('/', (req, res) => {
   res.send('خدمة تلخيص النصوص العربية تعمل!');
 });
