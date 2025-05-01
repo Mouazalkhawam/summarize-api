@@ -7,10 +7,11 @@ app.use(express.json());
 
 const HF_API_KEY = process.env.HF_API_KEY;
 
+// أفضل النماذج للعربية (اختر واحدًا)
 const ARABIC_MODELS = {
-  MAREFA: "eslamxm/AraT5-base-title-generation-finetune-ar-xlsum",
-  ARABART: "csebuetnlp/banglabart",
-  ARAT5: "UBC-NLP/AraT5-base-summarization"
+  MAREFA: "eslamxm/AraT5-base-title-generation-finetune-ar-xlsum", // متخصص في تلخيص العربية
+  ARABART: "csebuetnlp/banglabart", // يدعم العربية أيضًا
+  ARAT5: "UBC-NLP/AraT5-base-summarization" // خيار آخر
 };
 
 app.post('/summarize', async (req, res) => {
@@ -25,12 +26,7 @@ app.post('/summarize', async (req, res) => {
       `https://api-inference.huggingface.co/models/${ARABIC_MODELS.MAREFA}`,
       { 
         inputs: text,
-        parameters: { 
-          max_length: 100,
-          min_length: 50,
-          do_sample: true,
-          temperature: 0.7
-        }
+        parameters: { max_length: 130 } // تحكم بطول الملخص
       },
       { 
         headers: { 
@@ -40,17 +36,8 @@ app.post('/summarize', async (req, res) => {
       }
     );
 
-    let summary = response.data[0]?.summary_text || response.data.generated_text;
-    
-    if (!summary || summary.split(' ').length < 10) {
-      summary = "تعذر إنشاء ملخّص مفيد. يرجى التأكد من أن النص المدخل يحتوي على معلومات كافية.";
-    }
-
-    res.json({ 
-      original_length: text.length,
-      summary_length: summary.length,
-      summary 
-    });
+    const summary = response.data[0]?.summary_text || response.data.generated_text || "لا يمكن تلخيص النص الآن";
+    res.json({ summary });
 
   } catch (error) {
     console.error('Error:', error.response?.data || error.message);
